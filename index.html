@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Registro">
+<meta name="theme-color" content="#0f0f0f">
+<title>Registro</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0f0f0f;
+  --bg2: #1a1a1a;
+  --bg3: #242424;
+  --border: rgba(255,255,255,0.08);
+  --border2: rgba(255,255,255,0.14);
+  --text: #f0f0f0;
+  --text2: #888;
+  --text3: #555;
+  --green: #2dd4a0;
+  --green-bg: rgba(45,212,160,0.1);
+  --red: #f26b6b;
+  --red-bg: rgba(242,107,107,0.1);
+  --blue: #5b9cf6;
+  --blue-bg: rgba(91,156,246,0.1);
+  --amber: #f6a93b;
+  --amber-bg: rgba(246,169,59,0.1);
+  --radius: 14px;
+  --radius-sm: 8px;
+  --font-mono: 'DM Mono', monospace;
+  --font: 'DM Sans', sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; background: var(--bg); color: var(--text); font-family: var(--font); font-size: 15px; overflow: hidden; }
+
+/* LAYOUT */
+#app { display: flex; flex-direction: column; height: 100vh; height: 100dvh; }
+#main { flex: 1; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; padding: 0 0 80px; }
+#navbar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg2); border-top: 1px solid var(--border); display: flex; z-index: 100; padding-bottom: env(safe-area-inset-bottom); }
+.nav-btn { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 10px 4px 8px; background: none; border: none; color: var(--text3); font-family: var(--font); font-size: 10px; cursor: pointer; transition: color .2s; }
+.nav-btn.active { color: var(--green); }
+.nav-btn svg { width: 22px; height: 22px; }
+
+/* HEADER */
+.page-header { padding: 20px 18px 12px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; background: var(--bg); z-index: 10; border-bottom: 1px solid var(--border); }
+.page-title { font-size: 18px; font-weight: 500; letter-spacing: -0.3px; }
+.page-sub { font-size: 12px; color: var(--text2); margin-top: 2px; font-family: var(--font-mono); }
+
+/* SCREENS */
+.screen { display: none; }
+.screen.active { display: block; }
+
+/* METRIC CARDS */
+.metrics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 16px 18px; }
+.metric-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; }
+.metric-label { font-size: 11px; color: var(--text2); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 6px; font-family: var(--font-mono); }
+.metric-value { font-size: 22px; font-weight: 500; font-family: var(--font-mono); letter-spacing: -1px; }
+.metric-value.green { color: var(--green); }
+.metric-value.red { color: var(--red); }
+.metric-sub { font-size: 11px; color: var(--text3); margin-top: 3px; }
+
+/* SECTION */
+.section-label { font-size: 11px; color: var(--text2); text-transform: uppercase; letter-spacing: .8px; font-family: var(--font-mono); padding: 0 18px 8px; }
+
+/* ENTRY ROW */
+.entry-row { display: flex; align-items: center; gap: 12px; padding: 12px 18px; border-bottom: 1px solid var(--border); position: relative; }
+.entry-row:active { background: var(--bg2); }
+.entry-icon { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0; }
+.entry-body { flex: 1; min-width: 0; }
+.entry-name { font-size: 14px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.entry-meta { font-size: 12px; color: var(--text2); margin-top: 2px; font-family: var(--font-mono); }
+.entry-amount { font-size: 15px; font-weight: 500; font-family: var(--font-mono); flex-shrink: 0; }
+.entry-amount.income { color: var(--green); }
+.entry-amount.expense { color: var(--text); }
+.delete-btn { background: none; border: none; color: var(--text3); padding: 6px; cursor: pointer; flex-shrink: 0; }
+.delete-btn:active { color: var(--red); }
+
+/* CATEGORY SECTION */
+.cat-section { margin: 0 0 4px; }
+.cat-section-header { display: flex; align-items: center; gap: 10px; padding: 14px 18px 6px; cursor: pointer; user-select: none; }
+.cat-section-icon { width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+.cat-section-name { font-size: 14px; font-weight: 500; flex: 1; }
+.cat-section-total { font-size: 14px; font-family: var(--font-mono); color: var(--text2); }
+.cat-section-count { font-size: 11px; font-family: var(--font-mono); color: var(--text3); margin-left: 6px; }
+.cat-chevron { color: var(--text3); font-size: 12px; transition: transform .2s; }
+.cat-section.open .cat-chevron { transform: rotate(180deg); }
+.cat-entries { display: none; }
+.cat-section.open .cat-entries { display: block; }
+
+/* FORM */
+.form-wrap { padding: 16px 18px; }
+.type-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
+.type-btn { padding: 10px; border-radius: var(--radius-sm); border: 1px solid var(--border2); background: none; font-family: var(--font); font-size: 14px; font-weight: 500; color: var(--text2); cursor: pointer; transition: all .15s; display: flex; align-items: center; justify-content: center; gap: 6px; }
+.type-btn.active-expense { background: var(--red-bg); color: var(--red); border-color: rgba(242,107,107,0.3); }
+.type-btn.active-income { background: var(--green-bg); color: var(--green); border-color: rgba(45,212,160,0.3); }
+.form-field { margin-bottom: 12px; }
+.form-label { font-size: 11px; color: var(--text2); text-transform: uppercase; letter-spacing: .5px; font-family: var(--font-mono); margin-bottom: 6px; display: block; }
+.form-input { width: 100%; background: var(--bg2); border: 1px solid var(--border2); border-radius: var(--radius-sm); padding: 12px 14px; font-size: 16px; font-family: var(--font); color: var(--text); -webkit-appearance: none; appearance: none; }
+.form-input:focus { outline: none; border-color: var(--green); }
+select.form-input { cursor: pointer; }
+select.form-input option { background: #1a1a1a; }
+.amount-wrap { position: relative; }
+.amount-prefix { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text2); font-family: var(--font-mono); font-size: 16px; pointer-events: none; }
+.amount-input { padding-left: 28px !important; font-family: var(--font-mono) !important; font-size: 20px !important; font-weight: 500 !important; }
+.submit-btn { width: 100%; padding: 15px; background: var(--green); color: #0f0f0f; border: none; border-radius: var(--radius); font-size: 15px; font-weight: 500; font-family: var(--font); cursor: pointer; margin-top: 8px; transition: opacity .15s; }
+.submit-btn:active { opacity: .8; }
+
+/* STORIA filters */
+.filter-row { display: flex; gap: 8px; padding: 12px 18px; overflow-x: auto; scrollbar-width: none; }
+.filter-row::-webkit-scrollbar { display: none; }
+.filter-chip { padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border2); background: none; font-size: 12px; font-family: var(--font-mono); color: var(--text2); cursor: pointer; white-space: nowrap; flex-shrink: 0; transition: all .15s; }
+.filter-chip.active { background: var(--green); color: #0f0f0f; border-color: var(--green); }
+
+/* STORICO chart */
+.chart-card { margin: 0 18px 16px; background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
+.chart-title { font-size: 12px; color: var(--text2); font-family: var(--font-mono); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 12px; }
+.bar-chart { display: flex; align-items: flex-end; gap: 4px; height: 100px; }
+.bar-group { flex: 1; display: flex; gap: 2px; align-items: flex-end; }
+.bar { flex: 1; border-radius: 3px 3px 0 0; min-height: 2px; transition: height .3s; }
+.bar.income { background: var(--green); opacity: .7; }
+.bar.expense { background: var(--red); opacity: .7; }
+.bar-labels { display: flex; gap: 4px; margin-top: 6px; }
+.bar-label { flex: 1; text-align: center; font-size: 9px; color: var(--text3); font-family: var(--font-mono); }
+.period-metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 0 18px 16px; }
+.period-metric { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px 12px; text-align: center; }
+.period-metric-label { font-size: 10px; color: var(--text3); font-family: var(--font-mono); text-transform: uppercase; margin-bottom: 4px; }
+.period-metric-val { font-size: 16px; font-weight: 500; font-family: var(--font-mono); }
+
+/* LOADING / TOAST */
+#loader { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 999; flex-direction: column; gap: 12px; }
+.loader-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); animation: pulse 1.2s ease-in-out infinite; display: inline-block; margin: 0 3px; }
+.loader-dot:nth-child(2) { animation-delay: .2s; }
+.loader-dot:nth-child(3) { animation-delay: .4s; }
+@keyframes pulse { 0%,100%{opacity:.2;transform:scale(.8)} 50%{opacity:1;transform:scale(1)} }
+#toast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--bg3); border: 1px solid var(--border2); border-radius: 20px; padding: 8px 18px; font-size: 13px; opacity: 0; transition: all .3s; pointer-events: none; z-index: 200; white-space: nowrap; }
+#toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* CONFIG SCREEN */
+.config-wrap { padding: 24px 18px; }
+.config-title { font-size: 22px; font-weight: 500; margin-bottom: 6px; }
+.config-sub { font-size: 14px; color: var(--text2); line-height: 1.6; margin-bottom: 24px; }
+.config-step { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; }
+.config-step-num { font-size: 11px; color: var(--green); font-family: var(--font-mono); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 6px; }
+.config-step-text { font-size: 14px; color: var(--text2); line-height: 1.5; }
+.config-step-text a { color: var(--blue); text-decoration: none; }
+.config-step-text code { background: var(--bg3); padding: 2px 6px; border-radius: 4px; font-family: var(--font-mono); font-size: 12px; color: var(--amber); }
+.config-input-label { font-size: 11px; color: var(--text2); text-transform: uppercase; letter-spacing: .5px; font-family: var(--font-mono); margin: 16px 0 6px; display: block; }
+.config-btn { width: 100%; padding: 14px; background: var(--green); color: #0f0f0f; border: none; border-radius: var(--radius); font-size: 15px; font-weight: 500; font-family: var(--font); cursor: pointer; margin-top: 8px; }
+.sql-block { background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px; margin-top: 8px; font-family: var(--font-mono); font-size: 11px; color: var(--amber); line-height: 1.6; white-space: pre; overflow-x: auto; }
+.copy-btn { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-family: var(--font-mono); color: var(--text2); background: var(--bg3); border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; cursor: pointer; margin-top: 8px; }
+.empty-state { text-align: center; padding: 48px 24px; color: var(--text3); }
+.empty-icon { font-size: 32px; margin-bottom: 10px; }
+.empty-text { font-size: 14px; }
+</style>
+</head>
+<body>
+
+<div id="loader">
+  <div><span class="loader-dot"></span><span class="loader-dot"></span><span class="loader-dot"></span></div>
+  <div style="font-size:13px;color:var(--text2);font-family:var(--font-mono)">caricamento...</div>
+</div>
+
+<div id="app" style="display:none">
+  <div id="main">
+
+    <!-- DASHBOARD -->
+    <div id="screen-dashboard" class="screen active">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Registro</div>
+          <div class="page-sub" id="dash-month">—</div>
+        </div>
+      </div>
+      <div class="metrics-grid" id="dash-metrics"></div>
+      <div style="height:8px"></div>
+      <div class="section-label" id="dash-cat-label">Questo mese per categoria</div>
+      <div id="dash-cats"></div>
+      <div style="height:12px"></div>
+      <div class="section-label">Ultimi movimenti</div>
+      <div id="dash-recent"></div>
+    </div>
+
+    <!-- REGISTRA -->
+    <div id="screen-registra" class="screen">
+      <div class="page-header"><div class="page-title">Registra</div></div>
+      <div class="form-wrap">
+        <div class="type-row">
+          <button class="type-btn active-expense" id="btn-exp" onclick="setFormType('expense')">↑ Spesa</button>
+          <button class="type-btn" id="btn-inc" onclick="setFormType('income')">↓ Entrata</button>
+        </div>
+        <div class="form-field">
+          <label class="form-label">Importo</label>
+          <div class="amount-wrap">
+            <span class="amount-prefix">$</span>
+            <input class="form-input amount-input" type="number" id="f-amount" placeholder="0.00" inputmode="decimal" min="0" step="0.01">
+          </div>
+        </div>
+        <div class="form-field">
+          <label class="form-label">Categoria</label>
+          <select class="form-input" id="f-cat"></select>
+        </div>
+        <div class="form-field">
+          <label class="form-label">Data</label>
+          <input class="form-input" type="date" id="f-date">
+        </div>
+        <div class="form-field">
+          <label class="form-label">Nota (opzionale)</label>
+          <input class="form-input" type="text" id="f-note" placeholder="es. Supermercato, Stipendio maggio...">
+        </div>
+        <button class="submit-btn" onclick="submitEntry()">Salva</button>
+      </div>
+    </div>
+
+    <!-- MOVIMENTI -->
+    <div id="screen-movimenti" class="screen">
+      <div class="page-header"><div class="page-title">Movimenti</div></div>
+      <div class="filter-row" id="filter-row"></div>
+      <div id="mov-list"></div>
+    </div>
+
+    <!-- STORICO -->
+    <div id="screen-storico" class="screen">
+      <div class="page-header"><div class="page-title">Storico</div></div>
+      <div style="padding:8px 18px 4px;font-size:11px;color:var(--text2);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.5px">Seleziona uno o più mesi</div>
+      <div class="filter-row" id="month-chips" style="flex-wrap:wrap;gap:6px;padding:4px 18px 10px"></div>
+      <div class="chart-card">
+        <div class="chart-title">Entrate vs Spese</div>
+        <div class="bar-chart" id="bar-chart"></div>
+        <div class="bar-labels" id="bar-labels"></div>
+      </div>
+      <div class="period-metrics" id="period-metrics"></div>
+      <div style="height:8px"></div>
+      <div class="chart-card">
+        <div class="chart-title">Spese per categoria</div>
+        <div style="display:flex;align-items:center;gap:16px;">
+          <div style="position:relative;width:140px;height:140px;flex-shrink:0">
+            <canvas id="donut-chart" role="img" aria-label="Grafico a torta spese per categoria"></canvas>
+          </div>
+          <div id="donut-legend" style="flex:1;display:flex;flex-direction:column;gap:6px;"></div>
+        </div>
+      </div>
+      <div style="height:8px"></div>
+      <div class="section-label">Dettaglio per categoria</div>
+      <div id="storico-cats"></div>
+    </div>
+
+    <!-- IMPOSTAZIONI -->
+    <div id="screen-impostazioni" class="screen">
+      <div class="page-header"><div class="page-title">Impostazioni</div></div>
+      <div id="settings-content"></div>
+    </div>
+
+  </div>
+
+  <!-- NAVBAR -->
+  <nav id="navbar">
+    <button class="nav-btn active" onclick="showScreen('dashboard',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Dashboard
+    </button>
+    <button class="nav-btn" onclick="showScreen('registra',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+      Registra
+    </button>
+    <button class="nav-btn" onclick="showScreen('movimenti',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg>
+      Movimenti
+    </button>
+    <button class="nav-btn" onclick="showScreen('storico',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Storico
+    </button>
+    <button class="nav-btn" onclick="showScreen('impostazioni',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg>
+      Config
+    </button>
+  </nav>
+</div>
+
+<div id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+// ── CONFIG ──────────────────────────────────────────────────────────────
+const _supa = window.supabase;
+const CONFIG_KEY = 'registro_config_v1';
+
+const EXPENSE_CATS = [
+  {id:'cibo',      name:'Cibo & Spesa',     emoji:'🛒', color:'#2dd4a0', bg:'rgba(45,212,160,0.12)'},
+  {id:'bar',       name:'Bar & Ristoranti', emoji:'☕', color:'#f6a93b', bg:'rgba(246,169,59,0.12)'},
+  {id:'trasporti', name:'Trasporti',        emoji:'🚗', color:'#5b9cf6', bg:'rgba(91,156,246,0.12)'},
+  {id:'casa',      name:'Casa',             emoji:'🏠', color:'#c084fc', bg:'rgba(192,132,252,0.12)'},
+  {id:'salute',    name:'Salute',           emoji:'❤️', color:'#f26b6b', bg:'rgba(242,107,107,0.12)'},
+  {id:'svago',     name:'Svago',            emoji:'🎮', color:'#fb923c', bg:'rgba(251,146,60,0.12)'},
+  {id:'shopping',  name:'Shopping',        emoji:'👜', color:'#e879f9', bg:'rgba(232,121,249,0.12)'},
+  {id:'investimenti', name:'Investimenti', emoji:'📈', color:'#34d399', bg:'rgba(52,211,153,0.12)'},
+  {id:'altro_e',   name:'Altro',           emoji:'•',  color:'#888',    bg:'rgba(136,136,136,0.1)'},
+];
+const INCOME_CATS = [
+  {id:'stipendio',     name:'Stipendio',     emoji:'💼', color:'#2dd4a0', bg:'rgba(45,212,160,0.12)'},
+  {id:'freelance',     name:'Freelance',     emoji:'💻', color:'#5b9cf6', bg:'rgba(91,156,246,0.12)'},
+  {id:'investimenti_i',name:'Investimenti',  emoji:'📈', color:'#34d399', bg:'rgba(52,211,153,0.12)'},
+  {id:'rimborso',      name:'Rimborso',      emoji:'↩️', color:'#f6a93b', bg:'rgba(246,169,59,0.12)'},
+  {id:'altro_i',       name:'Altro',         emoji:'•',  color:'#888',    bg:'rgba(136,136,136,0.1)'},
+];
+const ALL_CATS = [...EXPENSE_CATS, ...INCOME_CATS];
+
+function getCat(type, id) {
+  const list = type === 'expense' ? EXPENSE_CATS : INCOME_CATS;
+  return list.find(c => c.id === id) || list[list.length - 1];
+}
+
+// ── STATE ───────────────────────────────────────────────────────────────
+let db = null;
+let allEntries = [];
+let formType = 'expense';
+let currentPeriod = 1;
+let donutChart = null;
+let dashPeriod = 1;
+let activeFilter = 'all';
+
+// ── INIT ────────────────────────────────────────────────────────────────
+async function init() {
+  const cfg = getConfig();
+  if (!cfg) {
+    renderConfigScreen();
+    document.getElementById('loader').style.display = 'none';
+    document.getElementById('app').style.display = 'flex';
+    showScreen('impostazioni', document.querySelectorAll('.nav-btn')[4]);
+    return;
+  }
+  try {
+    db = _supa.createClient(cfg.url, cfg.key);
+    await loadEntries();
+    buildUI();
+    document.getElementById('loader').style.display = 'none';
+    document.getElementById('app').style.display = 'flex';
+  } catch(e) {
+    document.getElementById('loader').innerHTML = `<div style="padding:24px;text-align:center;color:var(--red);font-size:14px">Errore connessione.<br><br><button onclick="clearConfig()" style="background:var(--red-bg);color:var(--red);border:1px solid rgba(242,107,107,0.3);border-radius:8px;padding:8px 16px;font-size:13px;cursor:pointer">Riconfigura</button></div>`;
+  }
+}
+
+function getConfig() {
+  try { return JSON.parse(localStorage.getItem(CONFIG_KEY)); } catch(e) { return null; }
+}
+function clearConfig() { localStorage.removeItem(CONFIG_KEY); location.reload(); }
+
+async function loadEntries() {
+  const { data, error } = await db.from('entries').select('*').order('date', { ascending: false });
+  if (error) throw error;
+  allEntries = data || [];
+}
+
+function buildUI() {
+  buildCatSelect();
+  buildFilterRow();
+  renderSettings();
+  document.getElementById('f-date').value = today();
+  renderAll();
+  buildMonthChips();
+}
+
+function renderAll() {
+  renderDashboard();
+  renderMovimenti();
+  renderStorico();
+}
+
+// ── NAVIGATION ──────────────────────────────────────────────────────────
+function showScreen(name, btn) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + name).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('main').scrollTop = 0;
+}
+
+// ── DASHBOARD ───────────────────────────────────────────────────────────
+function renderDashboard() {
+  const now = new Date();
+  const ym = now.toISOString().slice(0,7);
+  const monthNames = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
+  document.getElementById('dash-month').textContent = monthNames[now.getMonth()] + ' ' + now.getFullYear();
+
+  // This month only for income/expense
+  const me = allEntries.filter(e => e.date.startsWith(ym));
+  const inc = me.filter(e=>e.type==='income').reduce((s,e)=>s+parseFloat(e.amount),0);
+  const exp = me.filter(e=>e.type==='expense').reduce((s,e)=>s+parseFloat(e.amount),0);
+
+  // Cumulative net from ALL entries ever
+  const totalInc = allEntries.filter(e=>e.type==='income').reduce((s,e)=>s+parseFloat(e.amount),0);
+  const totalExp = allEntries.filter(e=>e.type==='expense').reduce((s,e)=>s+parseFloat(e.amount),0);
+  const net = totalInc - totalExp;
+
+  document.getElementById('dash-metrics').innerHTML =
+    '<div class="metric-card"><div class="metric-label">Entrate (mese)</div><div class="metric-value green">$' + fmt(inc) + '</div></div>' +
+    '<div class="metric-card"><div class="metric-label">Spese (mese)</div><div class="metric-value">$' + fmt(exp) + '</div></div>' +
+    '<div class="metric-card" style="grid-column:1/-1"><div class="metric-label">Saldo netto accumulato</div><div class="metric-value ' + (net>=0?'green':'red') + '">' + (net>=0?'+':'-') + '$' + fmt(Math.abs(net)) + '</div><div class="metric-sub">' + me.length + ' movimenti questo mese · ' + allEntries.length + ' totali</div></div>';
+
+  const expMe = me.filter(e=>e.type==='expense');
+  const catHtml = EXPENSE_CATS.map(cat => {
+    const items = expMe.filter(e=>e.cat===cat.id);
+    if (!items.length) return '';
+    const total = items.reduce((s,e)=>s+parseFloat(e.amount),0);
+    return '<div class="entry-row">' +
+      '<div class="entry-icon" style="background:' + cat.bg + '">' + cat.emoji + '</div>' +
+      '<div class="entry-body"><div class="entry-name">' + cat.name + '</div><div class="entry-meta">' + items.length + ' moviment' + (items.length===1?'o':'i') + '</div></div>' +
+      '<div class="entry-amount expense">$' + fmt(total) + '</div>' +
+      '</div>';
+  }).join('');
+  document.getElementById('dash-cats').innerHTML = catHtml || '<div class="empty-state"><div class="empty-text" style="color:var(--text3)">Nessuna spesa questo mese</div></div>';
+
+  const recent = [...allEntries].slice(0,8);
+  document.getElementById('dash-recent').innerHTML = recent.length
+    ? recent.map(e => entryRowHtml(e)).join('')
+    : '<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">Nessun movimento</div></div>';
+}
+
+// ── MOVIMENTI ───────────────────────────────────────────────────────────
+function buildFilterRow() {
+  const chips = [
+    {id:'all', label:'Tutti'},
+    {id:'expense', label:'Spese'},
+    {id:'income', label:'Entrate'},
+    ...ALL_CATS.map(c => ({id:c.id, label:c.name}))
+  ];
+  document.getElementById('filter-row').innerHTML = chips.map(c =>
+    `<button class="filter-chip ${c.id==='all'?'active':''}" onclick="setFilter('${c.id}',this)">${c.label}</button>`
+  ).join('');
+}
+
+function setFilter(id, btn) {
+  activeFilter = id;
+  document.querySelectorAll('.filter-chip').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderMovimenti();
+}
+
+function renderMovimenti() {
+  let list = [...allEntries];
+  if (activeFilter === 'expense') list = list.filter(e=>e.type==='expense');
+  else if (activeFilter === 'income') list = list.filter(e=>e.type==='income');
+  else if (activeFilter !== 'all') list = list.filter(e=>e.cat===activeFilter);
+
+  if (!list.length) {
+    document.getElementById('mov-list').innerHTML = '<div class="empty-state"><div class="empty-icon">🔍</div><div class="empty-text">Nessun movimento trovato</div></div>';
+    return;
+  }
+
+  // Group by category
+  const byCat = {};
+  list.forEach(e => {
+    if (!byCat[e.cat]) byCat[e.cat] = [];
+    byCat[e.cat].push(e);
+  });
+
+  let html = '';
+  for (const [catId, items] of Object.entries(byCat)) {
+    const type = items[0].type;
+    const cat = getCat(type, catId);
+    const total = items.reduce((s,e)=>s+parseFloat(e.amount),0);
+    html += `<div class="cat-section" id="cs-${catId}">
+      <div class="cat-section-header" onclick="toggleCat('cs-${catId}')">
+        <div class="cat-section-icon" style="background:${cat.bg}">${cat.emoji}</div>
+        <div class="cat-section-name">${cat.name}</div>
+        <div class="cat-section-total">$${fmt(total)}</div>
+        <div class="cat-section-count">${items.length}</div>
+        <div class="cat-chevron">▾</div>
+      </div>
+      <div class="cat-entries">
+        ${items.map(e => entryRowHtml(e)).join('')}
+      </div>
+    </div>`;
+  }
+  document.getElementById('mov-list').innerHTML = html;
+}
+
+function toggleCat(id) {
+  document.getElementById(id).classList.toggle('open');
+}
+
+// ── STORICO ─────────────────────────────────────────────────────────────
+let selectedMonths = new Set();
+
+function buildMonthChips() {
+  if (!allEntries.length) return;
+  // Get all unique months from entries + current month
+  const monthSet = new Set(allEntries.map(e => e.date.slice(0,7)));
+  const now = new Date(); now.setDate(1);
+  // Add last 12 months minimum
+  for (let i = 0; i < 12; i++) {
+    monthSet.add(now.toISOString().slice(0,7));
+    now.setMonth(now.getMonth()-1);
+  }
+  const sortedMonths = Array.from(monthSet).sort().reverse();
+  const monthLabels = ['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
+
+  // Default: select current month
+  if (selectedMonths.size === 0) {
+    selectedMonths.add(new Date().toISOString().slice(0,7));
+  }
+
+  document.getElementById('month-chips').innerHTML = sortedMonths.map(ym => {
+    const [y, m] = ym.split('-');
+    const label = monthLabels[parseInt(m)-1] + " '" + y.slice(2);
+    const active = selectedMonths.has(ym) ? 'active' : '';
+    return '<button class="filter-chip ' + active + '" onclick="toggleMonth(\'' + ym + '\',this)">' + label + '</button>';
+  }).join('');
+}
+
+function toggleMonth(ym, btn) {
+  if (selectedMonths.has(ym)) {
+    if (selectedMonths.size === 1) return; // keep at least one
+    selectedMonths.delete(ym);
+    btn.classList.remove('active');
+  } else {
+    selectedMonths.add(ym);
+    btn.classList.add('active');
+  }
+  renderStorico();
+}
+
+function renderStorico() {
+  buildMonthChips();
+  const months = Array.from(selectedMonths).sort();
+  const monthLabels = ['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
+  const labels = months.map(m => { const [y,mo]=m.split('-'); return monthLabels[parseInt(mo)-1]+"'"+y.slice(2); });
+  const incomes = months.map(m => allEntries.filter(e=>e.date.startsWith(m)&&e.type==='income').reduce((s,e)=>s+parseFloat(e.amount),0));
+  const expenses = months.map(m => allEntries.filter(e=>e.date.startsWith(m)&&e.type==='expense').reduce((s,e)=>s+parseFloat(e.amount),0));
+  const maxVal = Math.max(...incomes, ...expenses, 1);
+
+  const barHtml = months.map((_,i) =>
+    '<div class="bar-group">' +
+    '<div class="bar income" style="height:' + Math.round(incomes[i]/maxVal*96) + 'px" title="Entrate: $' + fmt(incomes[i]) + '"></div>' +
+    '<div class="bar expense" style="height:' + Math.round(expenses[i]/maxVal*96) + 'px" title="Spese: $' + fmt(expenses[i]) + '"></div>' +
+    '</div>').join('');
+  document.getElementById('bar-chart').innerHTML = barHtml;
+  document.getElementById('bar-labels').innerHTML = labels.map(l=>'<div class="bar-label">'+l+'</div>').join('');
+
+  const totInc = incomes.reduce((s,v)=>s+v,0);
+  const totExp = expenses.reduce((s,v)=>s+v,0);
+  const totNet = totInc - totExp;
+  const periodLabel = months.length === 1
+    ? monthLabels[parseInt(months[0].split('-')[1])-1] + ' ' + months[0].split('-')[0]
+    : months.length + ' mesi selezionati';
+
+  document.getElementById('period-metrics').innerHTML =
+    '<div class="period-metric"><div class="period-metric-label">Entrate</div><div class="period-metric-val" style="color:var(--green)">$' + fmt(totInc) + '</div></div>' +
+    '<div class="period-metric"><div class="period-metric-label">Spese</div><div class="period-metric-val">$' + fmt(totExp) + '</div></div>' +
+    '<div class="period-metric"><div class="period-metric-label">Saldo</div><div class="period-metric-val" style="color:' + (totNet>=0?'var(--green)':'var(--red)') + '">' + (totNet>=0?'+':'-') + '$' + fmt(Math.abs(totNet)) + '</div></div>';
+
+  // Category breakdown
+  const periodEntries = allEntries.filter(e => months.some(m => e.date.startsWith(m)));
+  const byCat = {};
+  periodEntries.filter(e=>e.type==='expense').forEach(e => {
+    if (!byCat[e.cat]) byCat[e.cat] = { total: 0, count: 0, cat: getCat('expense', e.cat) };
+    byCat[e.cat].total += parseFloat(e.amount);
+    byCat[e.cat].count++;
+  });
+  const sorted = Object.values(byCat).sort((a,b)=>b.total-a.total);
+  document.getElementById('storico-cats').innerHTML = sorted.length
+    ? sorted.map(function(v) { return '<div class="entry-row">' +
+        '<div class="entry-icon" style="background:' + v.cat.bg + '">' + v.cat.emoji + '</div>' +
+        '<div class="entry-body"><div class="entry-name">' + v.cat.name + '</div><div class="entry-meta">' + v.count + ' moviment' + (v.count===1?'o':'i') + '</div></div>' +
+        '<div class="entry-amount expense">$' + fmt(v.total) + '</div>' +
+        '</div>'; }).join('')
+    : '<div class="empty-state"><div class="empty-text">Nessuna spesa nel periodo</div></div>';
+  renderDonut(periodEntries);
+}
+
+function getPeriodMonths(n) {
+  if (n === 0) {
+    if (!allEntries.length) return [new Date().toISOString().slice(0,7)];
+    const oldest = allEntries[allEntries.length-1].date.slice(0,7);
+    const months = [];
+    let cur = new Date(); cur.setDate(1);
+    const end = new Date(oldest + '-01');
+    while (cur >= end) { months.unshift(cur.toISOString().slice(0,7)); cur.setMonth(cur.getMonth()-1); }
+    return months;
+  }
+  const months = [];
+  for (let i = n-1; i >= 0; i--) {
+    const d = new Date(); d.setDate(1); d.setMonth(d.getMonth()-i);
+    months.push(d.toISOString().slice(0,7));
+  }
+  return months;
+}
+
+// ── DONUT CHART ─────────────────────────────────────────────────────────
+function renderDonut(periodEntries) {
+  const el = document.getElementById('donut-chart');
+  if (!el) return;
+  const byCat = {};
+  periodEntries.filter(e=>e.type==='expense').forEach(e => {
+    if (!byCat[e.cat]) byCat[e.cat] = { total: 0, cat: getCat('expense', e.cat) };
+    byCat[e.cat].total += parseFloat(e.amount);
+  });
+  const sorted = Object.values(byCat).sort((a,b)=>b.total-a.total);
+  const total = sorted.reduce((s,v)=>s+v.total, 0);
+  const labels = sorted.map(v=>v.cat.name);
+  const data = sorted.map(v=>v.total);
+  const colors = sorted.map(v=>v.cat.color);
+  if (donutChart) { donutChart.destroy(); donutChart = null; }
+  if (!sorted.length) {
+    document.getElementById('donut-legend').innerHTML = '<div style="font-size:13px;color:#555">Nessuna spesa nel periodo</div>';
+    return;
+  }
+  donutChart = new Chart(el.getContext('2d'), {
+    type: 'doughnut',
+    data: { labels, datasets: [{ data, backgroundColor: colors, borderWidth: 0, hoverOffset: 4 }] },
+    options: {
+      responsive: true, maintainAspectRatio: false, cutout: '65%',
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: d => d.label + ': $' + parseFloat(d.raw).toFixed(2) } } }
+    }
+  });
+  document.getElementById('donut-legend').innerHTML = sorted.map(v => {
+    const pct = total > 0 ? Math.round(v.total/total*100) : 0;
+    return '<div style="display:flex;align-items:center;gap:8px;">' +
+      '<span style="width:10px;height:10px;border-radius:2px;background:' + v.cat.color + ';flex-shrink:0"></span>' +
+      '<span style="font-size:12px;color:#888;flex:1">' + v.cat.name + '</span>' +
+      '<span style="font-size:12px;font-family:var(--font-mono);color:#f0f0f0">' + pct + '%</span>' +
+      '</div>';
+  }).join('');
+}
+
+// ── FORM ────────────────────────────────────────────────────────────────
+function setFormType(t) {
+  formType = t;
+  document.getElementById('btn-exp').className = 'type-btn' + (t==='expense'?' active-expense':'');
+  document.getElementById('btn-inc').className = 'type-btn' + (t==='income'?' active-income':'');
+  buildCatSelect();
+}
+
+function buildCatSelect() {
+  const sel = document.getElementById('f-cat');
+  if (!sel) return;
+  sel.innerHTML = (formType==='expense'?EXPENSE_CATS:INCOME_CATS)
+    .map(c => `<option value="${c.id}">${c.emoji} ${c.name}</option>`).join('');
+}
+
+async function submitEntry() {
+  const amount = parseFloat(document.getElementById('f-amount').value);
+  const cat = document.getElementById('f-cat').value;
+  const date = document.getElementById('f-date').value;
+  const note = document.getElementById('f-note').value.trim();
+  if (!amount || amount <= 0 || !date) { toast('Inserisci importo e data'); return; }
+  const btn = document.querySelector('.submit-btn');
+  btn.textContent = 'Salvataggio...'; btn.disabled = true;
+  const { data, error } = await db.from('entries').insert([{ type: formType, amount, cat, date, note }]).select();
+  btn.textContent = 'Salva'; btn.disabled = false;
+  if (error) { toast('Errore: ' + error.message); return; }
+  allEntries.unshift(data[0]);
+  document.getElementById('f-amount').value = '';
+  document.getElementById('f-note').value = '';
+  toast('Salvato ✓');
+  renderAll();
+  showScreen('dashboard', document.querySelectorAll('.nav-btn')[0]);
+}
+
+async function deleteEntry(id) {
+  if (!confirm('Eliminare questo movimento?')) return;
+  const { error } = await db.from('entries').delete().eq('id', id);
+  if (error) { toast('Errore eliminazione'); return; }
+  allEntries = allEntries.filter(e => e.id !== id);
+  renderAll();
+  toast('Eliminato');
+}
+
+// ── SETTINGS ────────────────────────────────────────────────────────────
+function renderConfigScreen() {
+  const sql = `create table entries (
+  id bigint primary key generated always as identity,
+  type text not null,
+  cat text not null,
+  amount numeric not null,
+  date date not null,
+  note text default '',
+  created_at timestamptz default now()
+);
+alter table entries enable row level security;
+create policy "allow all" on entries for all using (true);`;
+
+  document.getElementById('settings-content').innerHTML = `
+    <div class="config-wrap">
+      <div class="config-title">Configura Supabase</div>
+      <div class="config-sub">Il tuo registro usa Supabase come database gratuito. I tuoi dati sono al sicuro per sempre. Segui questi passi una volta sola.</div>
+
+      <div class="config-step">
+        <div class="config-step-num">Passo 1</div>
+        <div class="config-step-text">Vai su <a href="https://supabase.com" target="_blank">supabase.com</a> → crea un account gratuito → crea un nuovo progetto (scegli qualsiasi nome e regione).</div>
+      </div>
+
+      <div class="config-step">
+        <div class="config-step-num">Passo 2 — crea la tabella</div>
+        <div class="config-step-text">Nel progetto Supabase vai su <strong>SQL Editor</strong> → incolla questo codice → premi Run:</div>
+        <div class="sql-block">${sql}</div>
+        <button class="copy-btn" onclick="copySql()">📋 Copia SQL</button>
+      </div>
+
+      <div class="config-step">
+        <div class="config-step-num">Passo 3 — copia le credenziali</div>
+        <div class="config-step-text">Vai su <strong>Project Settings → API</strong>. Copia:<br>• <code>Project URL</code><br>• <code>anon public</code> key</div>
+      </div>
+
+      <label class="config-input-label">Project URL</label>
+      <input class="form-input" type="text" id="cfg-url" placeholder="https://xxxxxxxxxxxx.supabase.co">
+
+      <label class="config-input-label">Anon Key</label>
+      <input class="form-input" type="text" id="cfg-key" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...">
+
+      <button class="config-btn" onclick="saveConfig()">Connetti e avvia →</button>
+    </div>`;
+}
+
+function renderSettings() {
+  const cfg = getConfig();
+  document.getElementById('settings-content').innerHTML = `
+    <div class="config-wrap">
+      <div class="config-title">Impostazioni</div>
+      <div class="config-step">
+        <div class="config-step-num">Database connesso</div>
+        <div class="config-step-text" style="word-break:break-all;color:var(--green)">${cfg?.url || '—'}</div>
+      </div>
+      <div style="height:16px"></div>
+      <div class="config-step">
+        <div class="config-step-num">Installa come app</div>
+        <div class="config-step-text">Su iPhone: apri Safari → tasto Condividi → <strong>Aggiungi a schermata Home</strong>.<br><br>Su Android: apri Chrome → menu → <strong>Aggiungi a schermata Home</strong>.</div>
+      </div>
+      <div style="height:16px"></div>
+      <button class="config-btn" style="background:var(--red-bg);color:var(--red);border:1px solid rgba(242,107,107,0.3)" onclick="clearConfig()">Riconfigura database</button>
+    </div>`;
+}
+
+async function saveConfig() {
+  const url = document.getElementById('cfg-url').value.trim();
+  const key = document.getElementById('cfg-key').value.trim();
+  if (!url || !key) { toast('Inserisci URL e chiave'); return; }
+  try {
+    const client = _supa.createClient(url, key);
+    const { error } = await client.from('entries').select('id').limit(1);
+    if (error) throw error;
+    localStorage.setItem(CONFIG_KEY, JSON.stringify({url, key}));
+    location.reload();
+  } catch(e) {
+    toast('Connessione fallita: ' + e.message);
+  }
+}
+
+function copySql() {
+  const sql = `create table entries (\n  id bigint primary key generated always as identity,\n  type text not null,\n  cat text not null,\n  amount numeric not null,\n  date date not null,\n  note text default '',\n  created_at timestamptz default now()\n);\nalter table entries enable row level security;\ncreate policy "allow all" on entries for all using (true);`;
+  navigator.clipboard.writeText(sql).then(() => toast('SQL copiato ✓'));
+}
+
+// ── HELPERS ─────────────────────────────────────────────────────────────
+function fmt(n) { return Number(n).toLocaleString('it-IT', {minimumFractionDigits:2, maximumFractionDigits:2}); }
+function today() { return new Date().toISOString().split('T')[0]; }
+
+function entryRowHtml(e) {
+  const cat = getCat(e.type, e.cat);
+  return `<div class="entry-row">
+    <div class="entry-icon" style="background:${cat.bg}">${cat.emoji}</div>
+    <div class="entry-body">
+      <div class="entry-name">${e.note || cat.name}</div>
+      <div class="entry-meta">${cat.name} · ${e.date}</div>
+    </div>
+    <div class="entry-amount ${e.type}">${e.type==='income'?'+':'-'}$${fmt(e.amount)}</div>
+    <button class="delete-btn" onclick="deleteEntry(${e.id})" aria-label="Elimina">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+    </button>
+  </div>`;
+}
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ── START ───────────────────────────────────────────────────────────────
+init();
+</script>
+</body>
+</html>
